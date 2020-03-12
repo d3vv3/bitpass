@@ -1,0 +1,12 @@
+version: '3'
+services:
+    bitpass:
+        build: .
+        volumes:
+            - /home/<you_user>/.gnupg/:/gpg_home
+            - /home/<your_user>/.password-store/:/password-store
+        environment:
+            - BW_USER=<your_email>
+            - BW_PASSWORD=<your_password>
+            - PUBLIC_GPG=<your_public_key.pub>
+        
