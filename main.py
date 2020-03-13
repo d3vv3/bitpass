@@ -62,9 +62,9 @@ def vault_iterator(vault: dict):
 
 
 def template(username: str, password: str, url: str):
-    x = """%s \n
-        URL: %s \n
-        Username: %s \n
+    x = """%s
+        URL: %s
+        Username: %s
         """ % (password, url, username)
     return x
 
