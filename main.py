@@ -62,8 +62,7 @@ def vault_iterator(vault: dict):
 
 
 def template(username: str, password: str, url: str):
-    x = """
-        %s \n
+    x = """%s \n
         URL: %s \n
         Username: %s \n
         """ % (password, url, username)
@@ -88,20 +87,22 @@ def items_iterator(items: list, folder_paths: dict):
         if item.get("type", 0) != 1:
             continue
         folder_path = folder_paths.get(item.get("folderId"), "/password-store")
-        file_path = folder_path + "/%s" % item.get("name")
-        file_path_temp = file_path + "_temp"
+        file_path = folder_path + "/%s" % item.get("name") + ".gpg"
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+        file_path_temp = file_path[:-4]
         try:
             uri = item.get("login", {}).get("uris")[0].get("uri")
+            username = item.get("login", {}).get("username", "")
         except Exception:
             uri = ""
-        file_content = template(item.get("login", {}).get("username", ""),
+            username = ""
+        file_content = template(username,
                                 item.get("login", {}).get("password", ""),
                                 uri)
-        with open(file_path_temp, 'w') as f:
-            f.write(file_content)
+        byte_content = file_content.encode('utf-8')
         imported_key = import_gpg_key(PUBLIC_GPG)
-        gpg.encrypt(file_path_temp, imported_key, encrypt=True, output=file_path)
-        os.remove(file_path_temp)
+        gpg.encrypt(byte_content, imported_key, encrypt=True, output=file_path)
     return
 
 
