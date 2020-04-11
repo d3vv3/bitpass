@@ -17,7 +17,9 @@ optional arguments:
 
   -h, --help            Show this help message and exit.
 
-  --password PASSWORD   Password for your Bitwarden account. If not 						    provided, the user will be prompted for the 						    password.
+  --password PASSWORD   Password for your Bitwarden account. If not  
+                        provided, the user will be prompted for the
+                        password.
 
 required arguments:
 
