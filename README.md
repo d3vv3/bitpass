@@ -6,7 +6,7 @@ This tool was created to have the best of both worlds.
 
 ## bitpass-cli
 
-A command-line interface tool to synchronize your Bitwarden pass.
+A command-line interface tool to synchronize your Bitwarden to Pass.
 
 ### Usage
 
