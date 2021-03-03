@@ -3,10 +3,12 @@ services:
     bitpass:
         build: .
         volumes:
-            - /home/<you_user>/.gnupg/:/gpg_home
-            - /home/<your_user>/.password-store/:/password-store
+            - $GPG_HOME:/gpg_home
+            - $PASSWORD_STORE:/password-store
         environment:
-            - BW_USER=<your_email>
-            - BW_PASSWORD=<your_password>
-            - PUBLIC_GPG=<your_public_key.pub>
-        
+            - BW_USER=$BW_USER
+            - BW_PASSWORD=$BW_PASSWORD
+            - PUBLIC_GPG_NAME=$PUBLIC_GPG_NAME
+            # If you want to get notifications on leaked passwords
+            # we are using apprise here https://github.com/caronc/apprise
+            - NOTIF_URL=$NOTIF_URL

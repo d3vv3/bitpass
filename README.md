@@ -2,36 +2,39 @@
 
 While Bitwarden is much more friendly on Android and iOS devices, Pass can be so much more convenient in the computer.
 
-This tool was created to have the best of both worlds.
+This tool was created to have the best of both worlds with Linux Pass.
 
 ## bitpass-cli
 
-A command-line interface tool to synchronize your Bitwarden pass.
+A command-line interface tool to synchronize your Bitwarden to Linux Pass.
 
 ### Usage
 
 ```
-usage: bitpass-cli [-h] --user USER [--password PASSWORD] --gnupg_home GNUPG_HOME --public_gpg PUBLIC_GPG --pass_storage PASS_STORAGE
+usage: main.py [-h] -user USER [--password PASSWORD] -gnupg_home GNUPG_HOME -public_gpg PUBLIC_GPG -pass_storage PASS_STORAGE [--notification_url NOTIFICATION_URL]
 
 optional arguments:
 
-  -h, --help            Show this help message and exit.
+  -h, --help            show this help message and exit
 
   --password PASSWORD   Password for your Bitwarden account. If not  
-                        provided, the user will be prompted for the
-                        password.
+                        provided, the user will be prompted for the password.
+
+  --notification_url NOTIFICATION_URL
+                        URL for apprise integration. More at  
+                        https://github.com/caronc/apprise
 
 required arguments:
 
-  --user USER           Email to your Bitwarden account.
-  
-  --gnupg_home GNUPG_HOME
-                        Path to your .gnupg.
+  -user USER            Email to your Bitwarden account
 
-  --public_gpg PUBLIC_GPG
-                        Path to your public gpg key file.
+  -gnupg_home GNUPG_HOME
+                        Path to your .gnupg
 
-  --pass_storage PASS_STORAGE
+  -public_gpg PUBLIC_GPG
+                        Path to your public gpg key file
+
+  -pass_storage PASS_STORAGE
                         Path to your Pass .password-storage
 ```
 
@@ -52,9 +55,10 @@ Thats all!
 
 1. Clone the repository by `git clone https://github.com/d3vv3/bitpass.git`
 2. Change `Dockerfile` environment variables for your values  
-		1. `BW_USER`: your Bitwarden user  
+	1. `BW_USER`: your Bitwarden user  
 	2. `BW_PASSWORD`: your Bitwarden password  
 	3. `PUBLIC_GPG`: your exported public key which you can get by `gpg --armor --export your_email > your_public_key.pub`
+    4. `NOTIF_URL`: your url for notifications with [apprise](https://github.com/caronc/apprise)
 3. Run `docker build -t local/bitpass:latest .`
 4. Run `docker run -v /home/<your_user>/.gnupg:/gpg_home -v /home/<your_user>/.password-store:/password-store local/bitpass`
 5. Create a cron job to execute step 4 whenever you want
@@ -63,9 +67,10 @@ Thats all!
 
 1. Clone the repository by `git clone https://github.com/d3vv3/bitpass.git`
 2. Change `docker-compose.yml` environment variables for your values  
-		1.  `BW_USER`: your Bitwarden user  
+	1.  `BW_USER`: your Bitwarden user  
 	2. `BW_PASSWORD`: your Bitwarden password  
 	3. `PUBLIC_GPG`: your exported public key which you can get by `gpg --armor --export your_email > your_public_key.pub`
+    4. `NOTIF_URL`: your url for notifications with [apprise](https://github.com/caronc/apprise)
 3. Change `docker-compose.yml` volumes for your values  
     1. `/home/<you_user>/.gnupg/:/gpg_home` being the path where your GPG home  
     2. `/home/<your_user>/.password-store/:/password-store` being the path where your pass `password-store` is.

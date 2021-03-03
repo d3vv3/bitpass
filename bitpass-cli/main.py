@@ -28,7 +28,11 @@ from getpass import getpass
 # Import for logging
 import logging
 
-# PATCH for an unsolved issue in GPG (https://github.com/isislovecruft/python-gnupg/issues/207)
+# Import for notifications on leaked passwords
+import apprise
+
+# PATCH for an unsolved issue in GPG
+# (https://github.com/isislovecruft/python-gnupg/issues/207)
 import gnupg._parsers
 gnupg._parsers.Verify.TRUST_LEVELS["ENCRYPTION_COMPLIANCE_MODE"] = 23
 
@@ -45,6 +49,9 @@ logger = logging.getLogger()
 # Configure the logger threshold
 logger.setLevel(logging.WARNING)
 
+# Create the notification object
+notif = apprise.Apprise()
+
 
 # ARGUMENTS
 
@@ -54,18 +61,31 @@ parser = argparse.ArgumentParser()
 
 required = parser.add_argument_group('required arguments')
 
-required.add_argument('--user', type=str,
-                      help='Email to your Bitwarden account', required=True)
-parser.add_argument('--password', type=str,
+required.add_argument('-user',
+                      type=str,
+                      help='Email to your Bitwarden account',
+                      required=True)
+parser.add_argument('--password',
+                    type=str,
                     help=("Password for your Bitwarden account. "
                           "If not provided, the user will be prompted for the"
-                          " password."))
-required.add_argument('--gnupg_home', type=str,
+                          " password."),
+                    required=False)
+required.add_argument('-gnupg_home',
+                      type=str,
                       help='Path to your .gnupg', required=True)
-required.add_argument('--public_gpg', type=str,
-                      help='Path to your public gpg key file', required=True)
-required.add_argument('--pass_storage', type=str,
-                      help='Path to your Pass .password-storage', required=True)
+required.add_argument('-public_gpg', type=str,
+                      help='Path to your public gpg key file',
+                      required=True)
+required.add_argument('-pass_storage',
+                      type=str,
+                      help='Path to your Pass .password-storage',
+                      required=True)
+parser.add_argument('--notification_url',
+                    type=str,
+                    help=('URL for apprise integration. More at '
+                          'https://github.com/caronc/apprise'),
+                    required=False)
 
 args = parser.parse_args()
 
@@ -75,6 +95,7 @@ PASSWORD = args.password
 GNUPG_HOME = args.gnupg_home
 PUBLIC_GPG = args.public_gpg
 PASS_STORAGE = args.pass_storage
+NOTIF_URL = args.notification_url
 
 
 # BITWARDEN FUNCTIONS
@@ -150,6 +171,10 @@ def create_folder_structure(folders: list):
 # Get the fields out of an item
 def get_item_fields(item: dict):
     try:
+        name = item.get("name", "blank named")
+    except Exception:
+        name = "blank named"
+    try:
         uri = item.get("login", {}).get("uris")[0].get("uri")
     except Exception:
         uri = ""
@@ -158,12 +183,20 @@ def get_item_fields(item: dict):
     except Exception:
         username = ""
     try:
-        password = item.get("login", {}).get("password", "")
+        password = item.get("login", {}).get("password", None)
     except Exception:
-        password = ""
-    if (password != "" and pwnedpasswords.check(password) > 0):
-        logger.warning("The password for %s at %s has been leaked" % (username,
-                                                                      uri))
+        password = None
+    if (password is not None and pwnedpasswords.check(str(password)) > 0):
+        warn = "The password for %s as %s at %s has been leaked" % (
+            name, username, uri)
+        try:
+            notif.notify(
+                body=warn,
+                title="BitPass",
+            )
+        except Exception:
+            pass
+        logger.warning(warn)
     return [username, password, uri]
 
 
@@ -177,6 +210,9 @@ def items_iterator(items: list, folder_paths: dict):
         # Get the path where the file goes
         folder_path = folder_paths.get(item.get("folderId"), PASS_STORAGE)
         file_path = folder_path + "/%s.gpg" % item.get("name")
+        # If folder does not exist, create it
+        if not os.path.isdir(folder_path):
+            os.mkdir(folder_path)
         # If it already exists, delete it to update it
         if os.path.isfile(file_path):
             os.remove(file_path)
@@ -212,5 +248,6 @@ def import_gpg_key(path: str):
 if __name__ == "__main__":
     if PASSWORD is None or PASSWORD == "":
         PASSWORD = getpass("Bitwarden password [hidden]:")
+    notif.add(NOTIF_URL)
     login(USER, PASSWORD)
     vault_iterator(get_vault(PASSWORD))
