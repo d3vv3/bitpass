@@ -18,6 +18,9 @@ optional arguments:
                         URL for apprise integration. More at  
                         https://github.com/caronc/apprise
 
+  --server SERVER       URL to a selfhosted instance of Bitwarden, for example
+                        Vaultwarden.
+
 required arguments:
 
   -user USER            Email to your Bitwarden account
@@ -36,7 +39,7 @@ required arguments:
 
 ## Dependencies
 
-1. `bitwarden-cli` is a must. You can install it from [here](https://github.com/bitwarden/cli).
-2. `pip3 install -r requirements.txt`
+1.  `bitwarden-cli` is a must. You can install it from [here](https://github.com/bitwarden/cli).
+2.  `pip3 install -r requirements.txt`
 
 That's all!
